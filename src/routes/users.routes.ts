@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
-import { registerUser, loginUser, getCurrentUser } from "../services/users.services";
+import { registerUser, loginUser, getCurrentUser, logoutUser } from "../services/users.services";
+
 
 
 export const usersRoutes = new Elysia({ prefix: "/api/users" })
@@ -84,7 +85,33 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
         }
       };
     }
+  })
+  .get("/logout", async ({ headers, set }) => {
+    try {
+      const authHeader = headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        throw new Error("token is required or invalid");
+      }
+
+      const token = authHeader.split(" ")[1];
+      await logoutUser(token);
+
+      return {
+        message: "User logged out successfully",
+        data: null
+      };
+    } catch (error: any) {
+      set.status = 401;
+      return {
+        message: "Failed to logout user",
+        data: {
+          status: "error",
+          error: "token is required or invalid"
+        }
+      };
+    }
   });
+
 
 
 

@@ -84,3 +84,21 @@ export const getCurrentUser = async (token: string) => {
   return result[0];
 };
 
+export const logoutUser = async (token: string) => {
+  if (!token) {
+    throw new Error("token is required or invalid");
+  }
+
+  // Delete session
+  const result = await db.delete(sessions).where(eq(sessions.token, token));
+
+  // In MySQL, result[0].affectedRows tells us if anything was deleted
+  // However, result is often an array or object depending on the driver
+  // Let's check if the deletion was successful
+  if (result[0].affectedRows === 0) {
+    throw new Error("token is required or invalid");
+  }
+
+  return null;
+};
+

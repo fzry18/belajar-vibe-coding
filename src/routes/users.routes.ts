@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
-import { registerUser, loginUser } from "../services/users.services";
+import { registerUser, loginUser, getCurrentUser } from "../services/users.services";
+
 
 export const usersRoutes = new Elysia({ prefix: "/api/users" })
   .post("/", async ({ body, set }) => {
@@ -53,7 +54,38 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
       email: t.String(),
       password: t.String()
     })
+  })
+  .get("/current", async ({ headers, set }) => {
+    try {
+      const authHeader = headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        throw new Error("Token is required or invalid");
+      }
+
+      const token = authHeader.split(" ")[1];
+      const user = await getCurrentUser(token);
+
+      return {
+        message: "User current successfully",
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          createdAt: user.createdAt
+        }
+      };
+    } catch (error: any) {
+      set.status = 401;
+      return {
+        message: "Failed to get user",
+        data: {
+          status: "error",
+          error: "Token is required or invalid"
+        }
+      };
+    }
   });
+
 
 
 

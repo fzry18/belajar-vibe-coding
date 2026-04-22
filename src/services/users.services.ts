@@ -60,3 +60,27 @@ export const loginUser = async (data: any) => {
   return { token };
 };
 
+export const getCurrentUser = async (token: string) => {
+  if (!token) {
+    throw new Error("Token is required or invalid");
+  }
+
+  // Find session and join with user
+  const result = await db.select({
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    createdAt: users.createdAt,
+  })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(eq(sessions.token, token))
+    .limit(1);
+
+  if (result.length === 0) {
+    throw new Error("Token is required or invalid");
+  }
+
+  return result[0];
+};
+
